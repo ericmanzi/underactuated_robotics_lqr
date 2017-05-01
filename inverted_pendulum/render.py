@@ -7,7 +7,9 @@ import pendulum
 
 pendulum = pendulum.Pendulum(
     .001,
-    [0, 0., pi, 0.],
+    # 10, # dtheta
+    # [0, 0., -pi/2, 0.],
+    [0, 0., 2*pi, 0.],
     10,
 )
 data = pendulum.integrate()
@@ -49,11 +51,17 @@ cart_plot = plt.subplot2grid(
 )
 cart_plot.axes.get_yaxis().set_visible(False)
 
+def video(fname, mimetype):
+    from IPython.display import HTML
+    video_encoded = open(fname, "rb").read().encode("base64")
+    video_tag = '<video controls alt="test" src="data:video/{0};base64,{1}">'.format(mimetype, video_encoded)
+    return HTML(data=video_tag)
+
 time_bar, = cart_time_line.plot([0,0], [10, -10], lw=3)
 def draw_point(point):
     time_bar.set_xdata([t, t])
     cart_plot.cla()
-    cart_plot.axis([-1.1,.1,-.5,.5])
+    cart_plot.axis([-1.1,1.1,-.8,.8])
     cart_plot.plot([point[1]-.1,point[1]+.1],[0,0],'r-',lw=5)
     cart_plot.plot([point[1],point[1]+.4*sin(point[3])],[0,.4*cos(point[3])],'g-', lw=4)
 t = 0
@@ -78,3 +86,14 @@ for point in data:
         frame_number += 1
 
 print os.system("ffmpeg -framerate 25 -i img/_tmp%03d.png  -c:v libx264 -r 30 -pix_fmt yuv420p pendulum_lqr.mp4")
+
+# In the next cell, run
+# video("pendulum_lqr.mp4", "mp4")
+
+
+
+
+
+
+
+

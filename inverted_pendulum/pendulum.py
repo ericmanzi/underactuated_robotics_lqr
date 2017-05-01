@@ -4,7 +4,8 @@ from control.matlab import *
 import time
 
 M = .6  # mass of cart+pendulum
-m = .3  # mass of pendulum
+# m = .3  # mass of pendulum
+m = .5  # mass of pendulum
 Km = 2  # motor torque constant
 Kg = .01  # gear ratio
 R = 6  # armiture resistance
@@ -41,8 +42,8 @@ B = matrix([
 
 Q = 0.25*identity(4)
 
-# We Don't need the eigen values
-(K, X, E) = lqr(A, B, Q, R);
+# Do we need eigenvalues?
+(K, X, E) = lqr(A, B, Q, R)
 
 def constrain(theta):
     theta = theta % (2*pi)
@@ -114,11 +115,15 @@ class Pendulum(object):
 
     def integrate(self):
         x = []
-        start_time = time.time()
+        # start_time = time.time()
+        c = 0
         while self.t <= self.end:
             # print(str((time.time()-start_time))+":"+str(abs(self.t-self.end)))
             self.rk4_step(self.dt)
             x.append([self.t] + self.x)
+            c+=1
+            print c
         # print("Time elapsed: %d seconds" % (time.time()-start_time))
         return array(x)
+
 

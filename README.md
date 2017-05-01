@@ -25,7 +25,7 @@ This problem set will explore the feedback control technique we discussed in lec
 d/dt [[q],[q_dot]] ~= A*[[(q-q_0)], [q_dot]] + B*u
 
 
-Next we're going to develop the continuous time LQR controller. 
+Next we're going to develop the continuous time LQR controller. *** let's not ask them to implement LQR. Instead, ask for example Q and R cont matrices***
 - scipy.linalg has several useful functions (link to scipy.linalg https://docs.scipy.org/doc/scipy-0.19.0/reference/linalg.html), 
 lookup scipy.linalg solution to the continuous-time algebraic Riccati equation
 - now compute the LQR gain as follows inv(R)*B.T*X

@@ -4,20 +4,20 @@ from math import sin, cos, pi
 import matplotlib.pyplot as plt
 
 import pendulum
-import boa
+# import boa
 
-# pendulum = pendulum.Pendulum(
+pendulum = pendulum.Pendulum(
 # pendulum = boa.Pendulum(
-#     .001, # dt
-#     # [0, 0., -pi/2, 0.], # 2*pi is upright
-#     [0.5, 0., pi, 0.], # x, dx, theta, dtheta
-#     10, # end
-# )
-pendulum = boa.Pendulum(
     .001, # dt
-    [0., 0.01, 0, 0.], # x, dx, theta, dtheta
+    # [0, 0., -pi/2, 0.], # 2*pi is upright
+    [0., 0., 3*pi/8, 0.], # x, dx, theta, dtheta
     10, # end
 )
+# pendulum = boa.Pendulum(
+#     .001, # dt
+#     [0., 0., pi, 0.], # x, dx, theta, dtheta
+#     10, # end
+# )
 data = pendulum.integrate()
 
 fig = plt.figure(0)
@@ -79,14 +79,11 @@ def draw_point(point):
     # Pole
     cart_plot.plot([point[1],point[1]+.4*sin(point[3])],[0,.4*cos(point[3])],'g-', lw=4)
 t = 0
-# fps = 25.
-fps = 15.
+fps = 25.
+# fps = 15.
 frame_number = 1
 # Create image output directory if it doesn't exist
-try:
-    os.remove('./img')
-except OSError:
-    pass
+os.system("rm -rf img/")
 try:
     os.makedirs('./img')
 except OSError:
@@ -104,8 +101,8 @@ for point in data:
         fig.savefig('img/_tmp%03d.png' % frame_number)
         frame_number += 1
 
-# print os.system("ffmpeg -framerate 25 -i img/_tmp%03d.png  -c:v libx264 -r 30 -pix_fmt yuv420p pendulum_lqr.mp4")
-print os.system("ffmpeg -framerate 15 -i img/_tmp%03d.png  -c:v libx264 -r 30 -pix_fmt yuv420p pendulum_lqr.mp4")
+print os.system("ffmpeg -framerate 25 -i img/_tmp%03d.png  -c:v libx264 -r 30 -pix_fmt yuv420p pendulum_lqr.mp4")
+# print os.system("ffmpeg -framerate 15 -i img/_tmp%03d.png  -c:v libx264 -r 30 -pix_fmt yuv420p pendulum_lqr.mp4")
 
 # In the next cell, run
 # video("pendulum_lqr.mp4", "mp4")

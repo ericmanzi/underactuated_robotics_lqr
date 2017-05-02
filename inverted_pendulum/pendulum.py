@@ -81,19 +81,20 @@ class Pendulum(object):
 
     def control(self, u):
         c = constrain(u[2])
-        if c>-pi/5 and c<pi/5:
-            return float(-K*matrix(u[0:2]+[c]+[u[3]]).T)
-        else:
-            return self.swing_up(u)
+        # if c>-pi/5 and c<pi/5:
+        return float(-K*matrix(u[0:2]+[c]+[u[3]]).T)
+        # else:
+            # return self.swing_up(u)
 
-    def swing_up(self, u):
+    def swing_up(self, u): # students implement this
+        # u[2] = theta, u[3] = dtheta
         E0 = 0.
-        k = 1
+        k = 1 
         w = (m*g*l/(4*I))**(.5)
         E = m*g*l*(.5*(u[3]/w)**2 + cos(u[2])-1)
-        a = k*(E-E0)*cmp(u[3]*cos(u[2]), 0)
+        a = k*(E-E0)*cmp(u[3]*cos(u[2]), 0) # this is u in notes
         F = M*a
-        V = (F - K2*constrain(u[2]))/K1
+        V = (F - K2*constrain(u[2]))/K1 # students implement
         return sat(Vsat, V)
 
     def rk4_step(self, dt):

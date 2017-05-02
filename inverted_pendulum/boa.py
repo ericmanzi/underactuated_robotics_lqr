@@ -39,13 +39,13 @@ B = matrix([
     [B2]
 ])
 
-# Q = 0.25*identity(4)
-Q = matrix([ # positive definite
-    [100, 0, 0, 0],
-    [0, 1, 0, 0],
-    [0, 0, 100, 0],
-    [0, 0, 0, 1]
-])
+Q = 0.25*identity(4)
+# Q = matrix([ # positive definite
+#     [100, 0, 0, 0],
+#     [0, 1, 0, 0],
+#     [0, 0, 100, 0],
+#     [0, 0, 0, 1]
+# ])
 
 (K, X, E) = lqr(A, B, Q, R)
 K = array([[ 0,  -5, -30,  -7]])
@@ -86,9 +86,9 @@ class Pendulum(object):
     def control(self, u):
         c = constrain(u[2])
         # if c>-pi/5 and c<pi/5:
-        # return float(-K*matrix(u[0:2]+[c]+[u[3]]).T)
+        return float(-K*matrix(u[0:2]+[c]+[u[3]]).T)
         # else:
-        return self.swing_up(u)
+        # return self.swing_up(u)
 
     def swing_up(self, u): # students implement this
         # u[2] = theta, u[3] = dtheta
@@ -141,21 +141,73 @@ class Pendulum(object):
 # data = pendulum.integrate()
 # print data[len(data)-1]
 
-boa = []
-# theta_range = arange(0, 2*pi, 0.01)
-# d_theta_range = arange(0, 100, 2)
-# for th in theta_range:
-#     for d_th in d_theta_range:
-#         pendulum = pendulum.Pendulum(
-#         .001, # dt
-#         [0., 0., th, d_th], # x, dx, theta, dtheta
-#         10, # end
-#         )
-#         data = pendulum.integrate()
-#         theta_end = data[len(data)-1]
-#         success = theta_end < 0.05
-#         
+import multiprocessing as mp
+manager = mp.Manager()
+# boa_dict = manager.dict()
+# for ang in [-90, -80, -70, -60, -50, -45, -40, -35, -25, -15, -5, 0, 5, 10, 20, 30, 40, 45, 50, 55, 65, 75, 85, 95]:
+    # boa_dict[ang] = {}
 
+d1 = manager.dict()
+d2 = manager.dict()
+d3 = manager.dict()
+d4 = manager.dict()
+
+def solve_for_range(boa, theta_start, theta_end):
+    theta_range = arange(theta_start, theta_end+10, 10)
+    d_theta_range = arange(-60, 60, 30)
+    for th in theta_range:
+        boa[th] = {}
+        for d_th in d_theta_range:
+            pendulum = Pendulum(
+            .001, # dt
+            [0., 0., th*pi/180, d_th], # x, dx, theta, dtheta
+            10, # end
+            )
+            data = pendulum.integrate()
+            data_last = data[len(data)-1]
+            success = data_last[3] < 0.05 and data_last[4] < 0.05
+            boa[th][d_th] = success
+            print boa
+            print th
+            print d_th
+            print data_last
+
+processes = [mp.Process(target=solve_for_range, args=(d1, -90, -45))] # -90,-80..-50
+processes.append(mp.Process(target=solve_for_range, args=(d2, -45, 0)))
+processes.append(mp.Process(target=solve_for_range, args=(d3, 0, 45)))
+processes.append(mp.Process(target=solve_for_range, args=(d4, 45, 90)))
+
+for p in processes:
+    p.start()
+
+for p in processes:
+    p.join()
+
+print d1
+print d2
+print d3
+print d4
+boa_dict = {}
+for d in [d1,d2,d3,d3]:
+    for k in d.keys():
+        boa_dict[k] = d[k]
+
+
+import matplotlib.pyplot as plt
+x_keys = sorted(boa_dict.keys())
+print x_keys
+boa_plot_x = []
+boa_plot_y = []
+
+for th in x_keys:
+    for dth in boa_dict[th]:
+        if boa_dict[th][dth]:
+            th_neg = -360+th if th > 180 else th
+            boa_plot_x.append(th_neg)
+            boa_plot_y.append(dth)
+
+plt.scatter(boa_plot_x, boa_plot_y)
+plt.show()
 
 
 

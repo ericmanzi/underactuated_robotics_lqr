@@ -14,8 +14,7 @@ def lqr(A,B,Q,R):
  
     #first, try to solve the ricatti equation
     X = np.matrix(scipy.linalg.solve_continuous_are(A, B, Q, R))
-    print(B)
-    print(B.T)
+
     #compute the LQR gain
     K = np.matrix(scipy.linalg.inv(R)*(B.T*X))
      

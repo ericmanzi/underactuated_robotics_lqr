@@ -1,11 +1,10 @@
 from math import sin, cos, pi
-from numpy import matrix, array, identity
+from numpy import matrix, array, identity, arange
 from control.matlab import *
 import time
 
 M = .6  # mass of cart+pendulum
 m = .3  # mass of pendulum
-# m = .5  # mass of pendulum
 Km = 2  # motor torque constant
 Kg = .01  # gear ratio
 R = 6  # armiture resistance
@@ -40,8 +39,13 @@ B = matrix([
     [B2]
 ])
 
-Q = 0.25*identity(4)
-
+# Q = 0.25*identity(4)
+Q = matrix([ # positive definite
+    [100, 0, 0, 0],
+    [0, 1, 0, 0],
+    [0, 0, 100, 0],
+    [0, 0, 0, 1]
+])
 
 (K, X, E) = lqr(A, B, Q, R)
 K = array([[ 0,  -5, -30,  -7]])
@@ -81,32 +85,25 @@ class Pendulum(object):
 
     def control(self, u):
         c = constrain(u[2])
-        if c>-pi/5 and c<pi/5:
-            return float(-K*matrix(u[0:2]+[c]+[u[3]]).T)
-        else:
-            return self.swing_up(u)
+        # if c>-pi/5 and c<pi/5:
+        # return float(-K*matrix(u[0:2]+[c]+[u[3]]).T)
+        # else:
+        return self.swing_up(u)
 
-    def swing_up(self, u):
+    def swing_up(self, u): # students implement this
+        # u[2] = theta, u[3] = dtheta
         E0 = 0.
-        k = 1
+        k = 1 
         w = (m*g*l/(4*I))**(.5)
         E = m*g*l*(.5*(u[3]/w)**2 + cos(u[2])-1)
-        a = k*(E-E0)*cmp(u[3]*cos(u[2]), 0)
+        a = k*(E-E0)*cmp(u[3]*cos(u[2]), 0) # this is u in notes
         F = M*a
-        V = (F - K2*constrain(u[2]))/K1
+        V = (F - K2*constrain(u[2]))/K1 # students implement
         return sat(Vsat, V)
 
     def rk4_step(self, dt):
-        print 'self.x'
-        print self.x
         dx = self.derivative(self.x)
-        # print 'dx'
-        # print dx
         k2 = [ dx_i*dt for dx_i in dx ]
-        print 'k2'
-        print k2
-        print 'zip'
-        print zip(self.x, k2)
 
         xv = [x_i + delx0_i/2.0 for x_i, delx0_i in zip(self.x, k2)]
         k3 = [ dx_i*dt for dx_i in self.derivative(xv)]
@@ -121,16 +118,52 @@ class Pendulum(object):
         self.x = map(average, zip(self.x, k1, k2, k3, k4))
         theta.append(constrain(self.x[2]))
 
-
     def integrate(self):
         x = []
-        # start_time = time.time()
         while self.t <= self.end:
-            # print(str((time.time()-start_time))+":"+str(abs(self.t-self.end)))
             self.rk4_step(self.dt)
             x.append([self.t] + self.x)
-            # print self.t
-        # print("Time elapsed: %d seconds" % (time.time()-start_time))
         return array(x)
+
+
+
+
+
+
+
+
+# -------------- CALCULATE BASIN OF ATTRACTION --------
+# pendulum = Pendulum(
+    # .001, # dt
+    # [0., 0., 2*pi, 0.], # x, dx, theta, dtheta
+    # 10, # end
+# )
+# data = pendulum.integrate()
+# print data[len(data)-1]
+
+boa = []
+# theta_range = arange(0, 2*pi, 0.01)
+# d_theta_range = arange(0, 100, 2)
+# for th in theta_range:
+#     for d_th in d_theta_range:
+#         pendulum = pendulum.Pendulum(
+#         .001, # dt
+#         [0., 0., th, d_th], # x, dx, theta, dtheta
+#         10, # end
+#         )
+#         data = pendulum.integrate()
+#         theta_end = data[len(data)-1]
+#         success = theta_end < 0.05
+#         
+
+
+
+
+
+
+
+
+
+
 
 

@@ -4,13 +4,19 @@ from math import sin, cos, pi
 import matplotlib.pyplot as plt
 
 import pendulum
+import boa
 
-pendulum = pendulum.Pendulum(
-    .001,
-    # 10, # dtheta
-    # [0, 0., -pi/2, 0.],
-    [0, 0., 2*pi, 0.],
-    10,
+# pendulum = pendulum.Pendulum(
+# pendulum = boa.Pendulum(
+#     .001, # dt
+#     # [0, 0., -pi/2, 0.], # 2*pi is upright
+#     [0.5, 0., pi, 0.], # x, dx, theta, dtheta
+#     10, # end
+# )
+pendulum = boa.Pendulum(
+    .001, # dt
+    [0., 0.01, 0, 0.], # x, dx, theta, dtheta
+    10, # end
 )
 data = pendulum.integrate()
 
@@ -62,12 +68,25 @@ def draw_point(point):
     time_bar.set_xdata([t, t])
     cart_plot.cla()
     cart_plot.axis([-1.1,1.1,-.8,.8])
-    cart_plot.plot([point[1]-.1,point[1]+.1],[0,0],'r-',lw=5)
+    # Cart
+    cart_plot.plot([point[1]-.1,point[1]+.1],[0,0],'r-',lw=15)
+    # Wheels
+    wc='#4e4a4a'
+    cart_plot.scatter(point[1]-0.1, -0.1, s=150, facecolors=wc, edgecolors=wc)
+    cart_plot.scatter(point[1]+0.1, -0.1, s=150, facecolors=wc, edgecolors=wc)
+    # Floor
+    cart_plot.plot([-1.1,1.1],[-0.16,-0.16],color='lightsteelblue',lw=5)
+    # Pole
     cart_plot.plot([point[1],point[1]+.4*sin(point[3])],[0,.4*cos(point[3])],'g-', lw=4)
 t = 0
-fps = 25.
+# fps = 25.
+fps = 15.
 frame_number = 1
 # Create image output directory if it doesn't exist
+try:
+    os.remove('./img')
+except OSError:
+    pass
 try:
     os.makedirs('./img')
 except OSError:
@@ -85,7 +104,8 @@ for point in data:
         fig.savefig('img/_tmp%03d.png' % frame_number)
         frame_number += 1
 
-print os.system("ffmpeg -framerate 25 -i img/_tmp%03d.png  -c:v libx264 -r 30 -pix_fmt yuv420p pendulum_lqr.mp4")
+# print os.system("ffmpeg -framerate 25 -i img/_tmp%03d.png  -c:v libx264 -r 30 -pix_fmt yuv420p pendulum_lqr.mp4")
+print os.system("ffmpeg -framerate 15 -i img/_tmp%03d.png  -c:v libx264 -r 30 -pix_fmt yuv420p pendulum_lqr.mp4")
 
 # In the next cell, run
 # video("pendulum_lqr.mp4", "mp4")

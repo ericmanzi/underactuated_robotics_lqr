@@ -8,6 +8,7 @@ walk students through controlling it to reach an equilibrium point by implementi
 adjusting the control parameters.
 
 The mini-pset is structured as follows:
+- 
 - Introduction to LQR
 - API documentation
 - Implement some helper functions for LQR

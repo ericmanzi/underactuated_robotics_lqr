@@ -140,7 +140,7 @@ class Pendulum(object):
 # )
 # data = pendulum.integrate()
 # print data[len(data)-1]
-
+"""
 import multiprocessing as mp
 manager = mp.Manager()
 out = mp.Queue()
@@ -208,7 +208,7 @@ for th in x_keys:
 
 plt.scatter(boa_plot_x, boa_plot_y)
 plt.show()
-
+"""
 
 
 

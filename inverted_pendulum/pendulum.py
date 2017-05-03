@@ -8,13 +8,11 @@ m = .3  # mass of pendulum
 # m = .5  # mass of pendulum
 Km = 2  # motor torque constant
 Kg = .01  # gear ratio
-# R = 6  # armiture resistance
-R = 2  # armiture resistance. Diverges
+R = 6  # armiture resistance
 r = .01  # drive radiu3
 K1 = Km*Kg/(R*r)
 K2 = Km**2*Kg**2/(R*r**2)
 l = .3  # length of pendulum to CG
-# l = .7  # length of pendulum to CG
 I = 0.006  # inertia of the pendulum
 L = (I + m*l**2)/(m*l)
 g = 9.81  # gravity
@@ -43,14 +41,10 @@ B = matrix([
 ])
 
 # Q = 0.25*identity(4)
-# Q = matrix([
-#     [10, 0, 0, 0],
-#     [0, 1, 0, 0],
-#     [0, 0, 10, 0],
-#     [0, 0, 0, 1]
-# ])
+
+
 Q = matrix([
-    [100, 0, 0, 0],
+    [1000, 0, 0, 0],
     [0, 1, 0, 0],
     [0, 0, 1, 0],
     [0, 0, 0, 1]

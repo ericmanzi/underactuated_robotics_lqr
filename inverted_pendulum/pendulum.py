@@ -8,7 +8,8 @@ m = .3  # mass of pendulum
 # m = .5  # mass of pendulum
 Km = 2  # motor torque constant
 Kg = .01  # gear ratio
-R = 6  # armiture resistance
+# R = 6  # armiture resistance
+R = 2  # armiture resistance. Diverges
 r = .01  # drive radiu3
 K1 = Km*Kg/(R*r)
 K2 = Km**2*Kg**2/(R*r**2)
@@ -30,6 +31,7 @@ A = matrix([
     [0, A31, A32, 0]
 ])
 
+
 B1 = Km*Kg/((M - m*l/L)*R*r)
 B2 = -1*Km*Kg/(M*(L-m*l/M)*R*r)
 
@@ -40,11 +42,24 @@ B = matrix([
     [B2]
 ])
 
-Q = 0.25*identity(4)
+# Q = 0.25*identity(4)
+# Q = matrix([
+#     [10, 0, 0, 0],
+#     [0, 1, 0, 0],
+#     [0, 0, 10, 0],
+#     [0, 0, 0, 1]
+# ])
+Q = matrix([
+    [100, 0, 0, 0],
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1]
+])
+
 
 
 (K, X, E) = lqr(A, B, Q, R)
-K = array([[ 0,  -5, -30,  -7]])
+# K = array([[ 0,  -5, -30,  -7]])
 
 def constrain(theta):
     theta = theta % (2*pi)
@@ -60,6 +75,11 @@ def sat(Vsat, V):
 def average(x):
     x_i, k1, k2, k3, k4 = x
     return x_i + (k1 + 2.0*(k3 + k4) +  k2) / 6.0
+
+def get_energy(u):
+    w = (m*g*l/(4*I))**(.5)
+    E = m*g*l*(.5*(u[3]/w)**2 + cos(u[2]) - 1)
+    return E
 
 theta = []
 class Pendulum(object):
@@ -81,33 +101,26 @@ class Pendulum(object):
 
     def control(self, u):
         c = constrain(u[2])
-        # if c>-pi/5 and c<pi/5:
-        return float(-K*matrix(u[0:2]+[c]+[u[3]]).T)
-        # else:
-            # return self.swing_up(u)
+        if c>-pi/5 and c<pi/5:
+            return float(-K*matrix(u[0:2]+[c]+[u[3]]).T)
+        else:
+            return self.swing_up(u)
 
     def swing_up(self, u): # students implement this
         # u[2] = theta, u[3] = dtheta
         E0 = 0.
-        k = 1 
-        w = (m*g*l/(4*I))**(.5)
-        E = m*g*l*(.5*(u[3]/w)**2 + cos(u[2])-1)
+        k = 1
+        # w = (m*g*l/(4*I))**(.5)
+        # E = m*g*l*(.5*(u[3]/w)**2 + cos(u[2])-1)
+        E = get_energy(u)
         a = k*(E-E0)*cmp(u[3]*cos(u[2]), 0) # this is u in notes
         F = M*a
         V = (F - K2*constrain(u[2]))/K1 # students implement
         return sat(Vsat, V)
 
     def rk4_step(self, dt):
-        print 'self.x'
-        print self.x
         dx = self.derivative(self.x)
-        # print 'dx'
-        # print dx
         k2 = [ dx_i*dt for dx_i in dx ]
-        print 'k2'
-        print k2
-        print 'zip'
-        print zip(self.x, k2)
 
         xv = [x_i + delx0_i/2.0 for x_i, delx0_i in zip(self.x, k2)]
         k3 = [ dx_i*dt for dx_i in self.derivative(xv)]
@@ -125,13 +138,10 @@ class Pendulum(object):
 
     def integrate(self):
         x = []
-        # start_time = time.time()
         while self.t <= self.end:
-            # print(str((time.time()-start_time))+":"+str(abs(self.t-self.end)))
             self.rk4_step(self.dt)
             x.append([self.t] + self.x)
-            # print self.t
-        # print("Time elapsed: %d seconds" % (time.time()-start_time))
+        print constrain(x[len(x)-1][2])
         return array(x)
 
 

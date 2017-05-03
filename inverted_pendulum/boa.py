@@ -48,7 +48,7 @@ Q = 0.25*identity(4)
 # ])
 
 (K, X, E) = lqr(A, B, Q, R)
-K = array([[ 0,  -5, -30,  -7]])
+# K = array([[ 0,  -5, -30,  -7]])
 
 def constrain(theta):
     theta = theta % (2*pi)
@@ -143,18 +143,20 @@ class Pendulum(object):
 
 import multiprocessing as mp
 manager = mp.Manager()
+out = mp.Queue()
 # boa_dict = manager.dict()
 # for ang in [-90, -80, -70, -60, -50, -45, -40, -35, -25, -15, -5, 0, 5, 10, 20, 30, 40, 45, 50, 55, 65, 75, 85, 95]:
     # boa_dict[ang] = {}
 
-d1 = manager.dict()
-d2 = manager.dict()
-d3 = manager.dict()
-d4 = manager.dict()
+# d1 = manager.dict()
+d1 = {}
+d2 = {}
+d3 = {}
+d4 = {}
 
 def solve_for_range(boa, theta_start, theta_end):
     theta_range = arange(theta_start, theta_end+10, 10)
-    d_theta_range = arange(-60, 60, 30)
+    d_theta_range = arange(-30, 30, 1)
     for th in theta_range:
         boa[th] = {}
         for d_th in d_theta_range:
@@ -171,6 +173,7 @@ def solve_for_range(boa, theta_start, theta_end):
             print th
             print d_th
             print data_last
+    out.put(boa)
 
 processes = [mp.Process(target=solve_for_range, args=(d1, -90, -45))] # -90,-80..-50
 processes.append(mp.Process(target=solve_for_range, args=(d2, -45, 0)))
@@ -183,12 +186,9 @@ for p in processes:
 for p in processes:
     p.join()
 
-print d1
-print d2
-print d3
-print d4
 boa_dict = {}
-for d in [d1,d2,d3,d3]:
+for d in [out.get() for p in processes]:
+    print d
     for k in d.keys():
         boa_dict[k] = d[k]
 

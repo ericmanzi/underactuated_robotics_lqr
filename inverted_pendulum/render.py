@@ -10,7 +10,7 @@ pendulum = pendulum.Pendulum(
 # pendulum = boa.Pendulum(
     .001, # dt
     # [0, 0., -pi/2, 0.], # 2*pi is upright
-    [0., 0., 3*pi/8, 0.], # x, dx, theta, dtheta
+    [0., 0., pi, 0.], # x, dx, theta, dtheta
     10, # end
 )
 # pendulum = boa.Pendulum(

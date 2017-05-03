@@ -136,7 +136,7 @@ class Pendulum(object):
         while self.t <= self.end:
             self.rk4_step(self.dt)
             x.append([self.t] + self.x)
-        print constrain(x[len(x)-1][2])
+        # print constrain(x[len(x)-1][2])
         return array(x)
 
 

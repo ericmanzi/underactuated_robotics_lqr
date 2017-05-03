@@ -14,6 +14,13 @@ def video(fname, mimetype):
     video_tag = '<video controls alt="test" src="data:video/{0};base64,{1}">'.format(mimetype, video_encoded)
     return HTML(data=video_tag)
 
+def play_local_video(fname):
+	return HTML("""
+	<video width="620" height="420" controls>
+	  <source src="./media/{0}.mp4" type="video/mp4">
+	</video>
+	""".format(fname))
+
 def test_ok():
     """ If execution gets to this point, print out a happy message """
     try:
@@ -84,16 +91,18 @@ def test_end_close_to_goal(final_pose):
 	x_success = test_end_at_x_goal(final_pose)
 	dtheta_success = final_pose[3] < 0.1
 	if not theta_success:
-		print "Goal pose (theta ~= 0) was not reached. theta = " + final_pose[2]
+		print("Goal pose (theta ~= 0) was not reached. theta = " + final_pose[2])
 	if not dtheta_success:
-		print "Goal pose (dtheta ~= 0) was not reached. dtheta (angular speed) = " + final_pose[0]
+		print("Goal pose (dtheta ~= 0) was not reached. dtheta (angular speed) = " + final_pose[0])
 	if not x_success:
-		print "Goal pose (x ~= 0) was not reached. x = " + final_pose[2]
+		print("Goal pose (x ~= 0) was not reached. x = " + final_pose[2])
 	return theta_success and x_success and dtheta_success
 
 def control_with_manual_gain(K_in):
 	global K
 	K = matrix(K_in)
+	print(x_0)
+	print(simulate.x_0)
 	final_pose = simulate(x_0, dx_0, 2*pi/8, dth_0, "manual_K")
 	assert test_end_close_to_goal(final_pose)
 	test_ok()
@@ -108,17 +117,17 @@ def tune_cost_functions(Q_in, R_in):
 	test_ok()
 
 def test_threshold(neg_threshold_in, pos_threshold_in):
-	print "Trying "+neg_threshold_in
+	print("Trying "+neg_threshold_in)
 	final_pose = simulate(x_0, dx_0, neg_threshold_in, dth_0, "threshold_neg")
 	assert test_end_close_to_goal(final_pose)
-	print "OK: "+neg_threshold_in
-	print "Trying "+pos_threshold_in
+	print("OK: "+neg_threshold_in)
+	print("Trying "+pos_threshold_in)
 	final_pose2 = simulate(x_0, dx_0, pos_threshold_in, dth_0, "threshold_pos")
 	assert test_end_close_to_goal(final_pose2)
-	print "OK: "+pos_threshold_in
+	print("OK: "+pos_threshold_in)
 	# Should have returned here if goal not reached
 	# If goal reached, check that threshold is atleast pi/5 
-	assert neg_threshold_in =< -pi/5 and pos_threshold_in >= pi/5
+	assert neg_threshold_in <= -pi/5 and pos_threshold_in >= pi/5
 	test_ok()
 
 def simulate_with_swingup():

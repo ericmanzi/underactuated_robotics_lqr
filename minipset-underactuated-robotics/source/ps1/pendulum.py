@@ -39,26 +39,10 @@ B = matrix([
     [B2]
 ])
 
-# Q = 10*identity(4)
+Q = 1*identity(4)
 
-# Q = matrix([
-#     [1, 0, 0, 0],
-#     [0, 50, 0, 0],
-#     [0, 0, 1, 0],
-#     [0, 0, 0, 50]
-# ])
-Q = matrix([
-    [10, 0, 0, 0],
-    [0, 1, 0, 0],
-    [0, 0, 10, 0],
-    [0, 0, 0, 1]
-])
+K = array([[ 0., 0., 0., 0.]])
 
-(K, X, E) = lqr(A, B, Q, R)
-print K
-# K = array([[ 0,  -5, -30,  -7]])
-# K = array([[ 0,  10, 10,  10]])
-# K = [[ -1.29099445  -5.62747245 -46.12266086  -7.49732299]] when theta_0 = 2*pi/8
 
 pos_threshold = pi/5
 neg_threshold = -pos_threshold
@@ -95,7 +79,8 @@ class Pendulum(object):
         self.end = end
 
     def derivative(self, u):
-        V = sat(Vsat, self.control(u))
+        # V = sat(Vsat, self.control(u))
+        V = sat(Vsat, 0)
         #x1 = x, x2 = x_dt, x3 = theta, x4 = theta_dt
         x1, x2, x3, x4 = u
         x1_dt, x3_dt =  x2, x4
@@ -113,6 +98,10 @@ class Pendulum(object):
             return float(-K*matrix(u[0:2]+[c]+[u[3]]).T)
         else:
             return self.swing_up(u)
+
+    def balance_lqr(self, u):
+        c = constrain(u[2])
+        return float(-K*matrix(u[0:2]+[c]+[u[3]]).T)
 
     def swing_up(self, u): # students implement this
         # u[2] = theta, u[3] = dtheta

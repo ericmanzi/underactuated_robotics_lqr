@@ -5,7 +5,7 @@ import scipy.linalg
 from nose.tools import assert_equal, ok_, assert_almost_equal, assert_in
 from IPython.display import display, HTML, clear_output, display_html, Javascript
 import pendulum
-import simulate
+import simulate as sim
 
 
 def video(fname, mimetype):
@@ -30,8 +30,6 @@ def test_ok():
         </div>""", raw=True)
     except:
         print("Tests passed!!")
-
-
 
 # lqr tests
 def check_lqr_solver(fn):
@@ -76,65 +74,68 @@ def check_lqr_solver(fn):
 """
 Test that after 10 seconds (10000 iterations), goal has been reached
 """
+x_0 = 0.
+dx_0 = 0.
+th_0 = 2*pi/8
+dth_0 = 0.
+
 def test_end_at_theta_goal(final_pose):
-	theta = final_pose[2]
+	theta = final_pose[3]
 	success = abs(pendulum.constrain(theta)) < 0.25
+	if not success:
+		print("Goal pose (theta ~= 0) was not reached. theta = " + str(final_pose[3]))
 	return success
 	
 def test_end_at_x_goal(final_pose):
-	x = final_pose[0]
-	success = abs(pendulum.constrain(x)) < 0.25
+	x = final_pose[1]
+	success = abs(pendulum.constrain(x)) < 1
+	if not success:
+		print("Goal pose (x ~= 0) was not reached. x = " + str(final_pose[1]))
 	return success
 
 def test_end_close_to_goal(final_pose):
 	theta_success = test_end_at_theta_goal(final_pose)
 	x_success = test_end_at_x_goal(final_pose)
-	dtheta_success = final_pose[3] < 0.1
-	if not theta_success:
-		print("Goal pose (theta ~= 0) was not reached. theta = " + final_pose[2])
+	dtheta_success = final_pose[4] < 0.1
 	if not dtheta_success:
-		print("Goal pose (dtheta ~= 0) was not reached. dtheta (angular speed) = " + final_pose[0])
-	if not x_success:
-		print("Goal pose (x ~= 0) was not reached. x = " + final_pose[2])
+		print("Goal pose (dtheta ~= 0) was not reached. dtheta (angular speed) = " + str(final_pose[3]))
 	return theta_success and x_success and dtheta_success
 
 def control_with_manual_gain(K_in):
-	global K
 	K = matrix(K_in)
-	print(x_0)
-	print(simulate.x_0)
-	final_pose = simulate(x_0, dx_0, 2*pi/8, dth_0, "manual_K")
+	final_pose = sim.simulate(x_0, dx_0, 2*pi/8, dth_0, K, "manual_K", False)
 	assert test_end_close_to_goal(final_pose)
 	test_ok()
 
-def tune_cost_functions(Q_in, R_in):
+def tune_cost_functions(solve_lqr, Q_in, R_in):
 	global K, Q, R
 	Q = matrix(Q_in)
 	R = matrix(R_in)
-	K = solve_lqr(A, B, Q, R)
-	final_pose = simulate(x_0, dx_0, 2*pi/8, dth_0, "tune_cost_fn")
+	K = solve_lqr(pendulum.A, pendulum.B, Q, R)
+	final_pose = sim.simulate(x_0, dx_0, 2*pi/8, dth_0, K, "tune_cost_fn", False)
 	assert test_end_close_to_goal(final_pose)
 	test_ok()
 
 def test_threshold(neg_threshold_in, pos_threshold_in):
-	print("Trying "+neg_threshold_in)
-	final_pose = simulate(x_0, dx_0, neg_threshold_in, dth_0, "threshold_neg")
+	K = matrix([[ -1.,  -2., -40.,  -7.]])
+	print("Trying "+str(neg_threshold_in))
+	final_pose = sim.simulate(x_0, dx_0, neg_threshold_in, dth_0, K, "threshold_neg", False)
 	assert test_end_close_to_goal(final_pose)
-	print("OK: "+neg_threshold_in)
-	print("Trying "+pos_threshold_in)
-	final_pose2 = simulate(x_0, dx_0, pos_threshold_in, dth_0, "threshold_pos")
+	print("OK: "+str(neg_threshold_in))
+	print("Trying "+str(pos_threshold_in))
+	final_pose2 = sim.simulate(x_0, dx_0, pos_threshold_in, dth_0, K, "threshold_pos", False)
 	assert test_end_close_to_goal(final_pose2)
-	print("OK: "+pos_threshold_in)
+	print("OK: "+str(pos_threshold_in))
 	# Should have returned here if goal not reached
 	# If goal reached, check that threshold is atleast pi/5 
 	assert neg_threshold_in <= -pi/5 and pos_threshold_in >= pi/5
 	test_ok()
 
-def simulate_with_swingup():
-	global K, use_swing_up
-	use_swing_up = True
-	K = solve_lqr(A, B, Q, R)
-	final_pose = simulate(x_0, dx_0, neg_threshold_in, dth_0, "swingup")
+def simulate_with_swingup(solve_lqr, Q_in, R_in):
+	Q = matrix(Q_in)
+	R = matrix(R_in)
+	K = solve_lqr(pendulum.A, pendulum.B, Q, R)
+	final_pose = sim.simulate(x_0, dx_0, pi/2, dth_0, K, "swingup", True)
 	assert test_end_close_to_goal(final_pose)
 	test_ok()
 

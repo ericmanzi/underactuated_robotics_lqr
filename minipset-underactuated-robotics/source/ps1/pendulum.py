@@ -67,20 +67,24 @@ def get_energy(u):
     E = m*g*l*(.5*(u[3]/w)**2 + cos(u[2]) - 1)
     return E
 
+def cmp(a, b):
+    return (a > b) - (a < b) 
+
 use_swing_up = False
 
 theta = []
 class Pendulum(object):
-    def __init__(self, dt, init_conds, end):
+    def __init__(self, dt, init_conds, end, K, use_swing_up):
         self.dt = dt
         self.t = 0.0
         self.x0 = matrix(init_conds[:])
         self.x = init_conds[:]
         self.end = end
+        self.K = K
+        self.use_swing_up = use_swing_up
 
     def derivative(self, u):
-        # V = sat(Vsat, self.control(u))
-        V = sat(Vsat, 0)
+        V = sat(Vsat, self.control(u))
         #x1 = x, x2 = x_dt, x3 = theta, x4 = theta_dt
         x1, x2, x3, x4 = u
         x1_dt, x3_dt =  x2, x4
@@ -91,17 +95,17 @@ class Pendulum(object):
 
     def control(self, u):
         c = constrain(u[2])
-        if not use_swing_up:
-            return float(-K*matrix(u[0:2]+[c]+[u[3]]).T)
+        if not self.use_swing_up:
+            return self.balance_lqr(u)
 
         if c > neg_threshold and c < pos_threshold: 
-            return float(-K*matrix(u[0:2]+[c]+[u[3]]).T)
+            return self.balance_lqr(u)
         else:
             return self.swing_up(u)
 
     def balance_lqr(self, u):
         c = constrain(u[2])
-        return float(-K*matrix(u[0:2]+[c]+[u[3]]).T)
+        return float(-self.K*matrix(u[0:2]+[c]+[u[3]]).T)
 
     def swing_up(self, u): # students implement this
         # u[2] = theta, u[3] = dtheta
@@ -127,7 +131,7 @@ class Pendulum(object):
         k1 = [self.dt*i for i in self.derivative(xv)]
 
         self.t += dt
-        self.x = map(average, zip(self.x, k1, k2, k3, k4))
+        self.x = list(map(average, zip(self.x, k1, k2, k3, k4)))
         theta.append(constrain(self.x[2]))
 
 

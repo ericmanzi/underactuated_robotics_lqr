@@ -97,16 +97,17 @@ def draw_point(point, t, cart_time_line, cart_plot, time_bar):
     cart_plot.plot([point[1]-.1,point[1]+.1],[0,0],'r-',lw=15)
     # Wheels
     wc='#4e4a4a'
-    cart_plot.scatter(point[1]-0.1, -0.1, s=150, facecolors=wc, edgecolors=wc)
-    cart_plot.scatter(point[1]+0.1, -0.1, s=150, facecolors=wc, edgecolors=wc)
+    cart_plot.scatter(point[1]-0.1, -0.13, s=150, facecolors=wc, edgecolors=wc)
+    cart_plot.scatter(point[1]+0.1, -0.13, s=150, facecolors=wc, edgecolors=wc)
     # Floor
-    cart_plot.plot([-1.1,1.1],[-0.16,-0.16],color='lightsteelblue',lw=5)
+    cart_plot.plot([-1.1,1.1],[-0.215,-0.215],color='lightsteelblue',lw=5)
     # Pole
     cart_plot.plot([point[1],point[1]+.4*sin(point[3])],[0,.4*cos(point[3])],'g-', lw=4)
 
 
+from numpy import matrix
 # simulate(x_0, dx_0, 5*pi/16, dth_0, "boa_theta_5-16pi") # Fails
-# simulate(x_0, dx_0, 2*pi/8, dth_0, "q_theta_2-8pi")
+simulate(x_0, dx_0, 2*pi/8, dth_0, matrix([[ -1.,  -2., -40.,  -7.]]), "test_plot", True)
 # simulate(x_0, 0.0, 1., dth_0, "freefall")
 
 
